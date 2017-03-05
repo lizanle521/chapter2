@@ -1,12 +1,15 @@
 package com.smart4j.chapter2.dao;
 
 import com.smart4j.chapter2.util.PropsUtil;
+import org.apache.commons.dbutils.QueryRunner;
+import org.apache.commons.dbutils.handlers.BeanListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -35,6 +38,8 @@ public final class DatabaseHelper {
         }
     }
 
+    private static final QueryRunner   QUERY_RUNNER = new QueryRunner();
+
     public static Connection getConnection(){
         Connection connection = null;
         try {
@@ -53,5 +58,27 @@ public final class DatabaseHelper {
                 logger.error("cannot close connection",e);
             }
         }
+    }
+
+    /**
+     * 查询实体列表
+     * @param entityClass
+     * @param sql
+     * @param params
+     * @param <T>
+     * @return
+     */
+    public static <T> List<T> getEntityList(Class<T> entityClass,String sql,Object ...params){
+        List<T> entityList = null;
+        Connection connection = getConnection();
+        try {
+            entityList = QUERY_RUNNER.query(connection,sql,new BeanListHandler<T>(entityClass),params);
+            return entityList;
+        } catch (SQLException e) {
+            logger.error("query entity failure",e);
+        } finally {
+            closeConnection(connection);
+        }
+        return entityList;
     }
 }
