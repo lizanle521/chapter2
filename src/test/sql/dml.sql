@@ -1,0 +1,2 @@
+INSERT  INTO  customer(name, contact, telephone, email, remark) VALUES ("lizanle","李赞乐","15074962645","491823689@qq.com","");
+INSERT  INTO  customer(name, contact, telephone, email, remark) VALUES ("shuzhen","淑珍","15700759962","691823689@qq.com","")
