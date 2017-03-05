@@ -1,5 +1,6 @@
 package com.smart4j.chapter2.dao;
 
+import com.smart4j.chapter2.model.Customer;
 import com.smart4j.chapter2.util.PropsUtil;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -16,13 +17,15 @@ import java.util.Properties;
  * 数据库连接工具
  * Created by Administrator on 2017/3/5.
  */
-public final class DatabaseHelper {
+public final class DatabaseHelper<T> {
     private static final Logger logger = LoggerFactory.getLogger(DatabaseHelper.class);
 
     private static final String DRIVER;
     private static final String URL;
     private static final String USERNAME;
     private static final String PASSWORD;
+
+    private static final ThreadLocal<Connection> CONNECTION_HOLDER = new ThreadLocal<Connection>();
 
     static {
         Properties properties = PropsUtil.loadProperties("config.properties");
@@ -41,21 +44,30 @@ public final class DatabaseHelper {
     private static final QueryRunner   QUERY_RUNNER = new QueryRunner();
 
     public static Connection getConnection(){
-        Connection connection = null;
-        try {
-            connection = DriverManager.getConnection(URL,USERNAME,PASSWORD);
-        } catch (SQLException e) {
-            logger.error("get connection failure",e);
+        Connection connection =  CONNECTION_HOLDER.get();
+        if(connection == null) {
+            try {
+                connection = DriverManager.getConnection(URL,USERNAME,PASSWORD);
+            } catch (SQLException e) {
+                logger.error("get connection failure",e);
+                throw  new RuntimeException(e);
+            } finally {
+                CONNECTION_HOLDER.set(connection);
+            }
         }
         return connection;
     }
 
-    public static  void closeConnection(Connection connection){
+    public static  void closeConnection(){
+        connection = CONNECTION_HOLDER.get();
         if(connection != null){
             try {
                 connection.close();
             } catch (SQLException e) {
                 logger.error("cannot close connection",e);
+                throw  new RuntimeException(e);
+            }finally {
+                CONNECTION_HOLDER.remove();
             }
         }
     }
@@ -81,4 +93,6 @@ public final class DatabaseHelper {
         }
         return entityList;
     }
+
+
 }
