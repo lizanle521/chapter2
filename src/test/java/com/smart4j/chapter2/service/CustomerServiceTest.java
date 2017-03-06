@@ -34,7 +34,7 @@ public class CustomerServiceTest {
 
     @Test
     public void getCustomerTest() throws  Exception {
-        Long id = 1L;
+        Long id = 2L;
         Customer customer = customerService.getCustomer(id);
         Assert.assertNotNull(customer);
     }
@@ -51,7 +51,7 @@ public class CustomerServiceTest {
 
     @Test
     public  void updateCustomerTest() throws  Exception {
-        Long id = 1L;
+        Long id = 2L;
         Map<String,Object> map = new HashMap<String,Object>();
         map.put("contact","eric");
         boolean result = customerService.updateCustomer(id,map);
@@ -60,7 +60,7 @@ public class CustomerServiceTest {
 
     @Test
     public void deleteCustomerTest() throws  Exception {
-        Long id = 1L;
+        Long id = 2L;
         boolean b = customerService.deleteCustomer(id);
         Assert.assertTrue(b);
     }

@@ -62,6 +62,6 @@ public class CustomerService {
      * @return
      */
     public boolean deleteCustomer(Long id){
-        return DatabaseHelper.deleteEntity(Customer.class,1);
+        return DatabaseHelper.deleteEntity(Customer.class,id);
     }
 }
