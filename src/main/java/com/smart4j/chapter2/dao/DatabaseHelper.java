@@ -1,7 +1,10 @@
 package com.smart4j.chapter2.dao;
 
+import com.google.common.base.CaseFormat;
 import com.smart4j.chapter2.model.Customer;
 import com.smart4j.chapter2.util.PropsUtil;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.dbutils.QueryRunner;
 import org.apache.commons.dbutils.handlers.BeanHandler;
 import org.apache.commons.dbutils.handlers.BeanListHandler;
@@ -12,9 +15,7 @@ import org.slf4j.LoggerFactory;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * 数据库连接工具
@@ -171,6 +172,83 @@ public final class DatabaseHelper<T> {
             closeConnection();
         }
         return rows;
+    }
+
+    /**
+     * 插入实体
+     * @param entityClass 实体类
+     * @param fieldMap 属性类
+     * @param <T>
+     * @return 是否插入成功的布尔值
+     */
+    public static <T> boolean insertEntity(Class<T> entityClass,Map<String,Object> fieldMap){
+        if(MapUtils.isEmpty(fieldMap)){
+            logger.error("field Map empty is not allowed");
+            return false;
+        }
+        String sql = "insert into " + getTableName(entityClass);
+
+        Set<Map.Entry<String, Object>> entrySet = fieldMap.entrySet();
+        StringBuilder fieldBuilder = new StringBuilder(fieldMap.size()).append("(");
+        StringBuilder valueBuilder = new StringBuilder(fieldMap.size()).append("(");
+        for(Map.Entry<String,Object> entry : entrySet){
+            fieldBuilder.append(entry.getKey()).append(",");
+            valueBuilder.append("?,");
+        }
+        fieldBuilder.replace(fieldBuilder.lastIndexOf(","),fieldBuilder.length(),")");
+        valueBuilder.replace(valueBuilder.lastIndexOf(","),valueBuilder.length(),")");
+        sql += fieldBuilder + " VALUES " + valueBuilder;
+        Object[] params = fieldMap.values().toArray();
+        return executeUpdate(sql,params) == 1;
+    }
+
+    /**
+     * 更新实体
+     * @param entityClass
+     * @param id 需要更新的实体的id
+     * @param fieldMap 需要更新的实体的列 和 列的值
+     * @param <T> 泛型
+     * @return 更新是否成功的布尔值
+     */
+    public static <T> boolean updateEntity(Class<T> entityClass,long id,Map<String,Object> fieldMap){
+        if(MapUtils.isEmpty(fieldMap)){
+            logger.error("fieldMap cannot be empty");
+            return false;
+        }
+        String sql = " update " + getTableName(entityClass) + " set ";
+        Set<Map.Entry<String, Object>> entrySet = fieldMap.entrySet();
+        StringBuilder setBuilder = new StringBuilder();
+        for (Map.Entry<String, Object> entry : entrySet) {
+            setBuilder.append(entry.getKey()).append("=?,");
+        }
+        sql += setBuilder.substring(0,setBuilder.lastIndexOf(",")) + " where id = ?";
+        List<Object> params = new ArrayList();
+        params.addAll(fieldMap.values());
+        params.add(id);
+        return executeUpdate(sql,params.toArray()) == 1;
+    }
+
+    /**
+     * 删除一条实体记录
+     * @param entityClass
+     * @param id
+     * @param <T>
+     * @return 删除成功的布尔值
+     */
+    public static <T> boolean deleteEntity(Class<T> entityClass,long id){
+        String sql = "delete from " + getTableName(entityClass) + " where id = ?";
+        return executeUpdate(sql,id) == 1;
+    }
+
+    /**
+     * 将驼峰方式命名的类名变成mysql表名（下划线形式）
+     * @param entityClass
+     * @param <T>
+     * @return
+     */
+    private static <T> String getTableName(Class<T> entityClass) {
+        String name = entityClass.getSimpleName();
+        return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE,name);
     }
 
 

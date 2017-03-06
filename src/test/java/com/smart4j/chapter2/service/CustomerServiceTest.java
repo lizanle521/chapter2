@@ -44,6 +44,7 @@ public class CustomerServiceTest {
         Map<String,Object> map = new HashMap<String,Object>();
         map.put("name","lizanle");
         map.put("telephone","15678900987");
+        map.put("contact","lizanle");
         boolean result = customerService.createCustomer(map);
         Assert.assertTrue(result);
     }
