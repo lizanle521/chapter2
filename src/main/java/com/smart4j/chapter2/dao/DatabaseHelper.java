@@ -13,6 +13,10 @@ import org.apache.commons.dbutils.handlers.MapListHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -224,6 +228,24 @@ public final class DatabaseHelper<T> {
     }
 
     /**
+     * 执行sql文件
+     * @param file 路径是resources下边的相对路径 ，譬如resources下边有文件sql/init.sql;那么file则取值 sql/init.sql
+     */
+    public static void executeSqlFile(String file){
+        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(file);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
+        String sql ;
+        try {
+            while((sql = bufferedReader.readLine()) != null){
+                executeUpdate(sql);
+            }
+        } catch (IOException e) {
+            logger.error("read sql file failure",e);
+            throw  new RuntimeException(e);
+        }
+    }
+
+    /**
      * 将驼峰方式命名的类名变成mysql表名（下划线形式）
      * @param entityClass
      * @param <T>
@@ -233,6 +255,8 @@ public final class DatabaseHelper<T> {
         String name = entityClass.getSimpleName();
         return CaseFormat.UPPER_CAMEL.to(CaseFormat.LOWER_UNDERSCORE,name);
     }
+
+
 
 
 }
