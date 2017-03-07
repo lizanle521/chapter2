@@ -6,10 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,13 +25,7 @@ public class CustomerServiceTest {
 
     @Before
     public void init() throws IOException {
-        String file = "sql/customer_init.sql";
-        InputStream inputStream = Thread.currentThread().getContextClassLoader().getResourceAsStream(file);
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-        String sql ;
-        while((sql = bufferedReader.readLine()) != null){
-            DatabaseHelper.executeUpdate(sql);
-        }
+        DatabaseHelper.executeSqlFile("sql/customer_init.sql");
     }
 
     @Test
